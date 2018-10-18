@@ -262,7 +262,7 @@ module ActiveShipping
           customer_number_node(xml, options)
           contract_id_node(xml, options)
           quote_type_node(xml, options)
-          expected_mailing_date_node(xml, shipping_date(options)) if options[:shipping_date]
+          expected_mailing_date_node(xml, options[:shipping_date]) if options[:shipping_date]
           shipping_options_node(xml, RATES_OPTIONS, options)
           parcel_node(xml, line_items, package)
           origin_node(xml, origin)
