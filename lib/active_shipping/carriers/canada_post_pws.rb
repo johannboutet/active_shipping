@@ -287,7 +287,8 @@ module ActiveShipping
           :service_code   => service_code,
           :total_price    => total_price,
           :currency       => 'CAD',
-          :delivery_range => [expected_date, expected_date]
+          :delivery_range => [expected_date, expected_date],
+          :transit_days   => node.at('service-standard/expected-transit-time') ? node.at('service-standard/expected-transit-time').text.to_i : nil
         }
         RateEstimate.new(origin, destination, @@name, service_name, options)
       end

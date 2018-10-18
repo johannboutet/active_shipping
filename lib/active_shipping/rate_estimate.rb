@@ -82,7 +82,7 @@ module ActiveShipping
   class RateEstimate
     attr_accessor :origin, :destination, :package_rates,
                 :carrier, :service_name, :service_code, :description,
-                :shipping_date, :delivery_date, :delivery_range,
+                :shipping_date, :delivery_date, :delivery_range, :transit_days,
                 :currency, :negotiated_rate, :insurance_price,
                 :estimate_reference, :expires_at, :pickup_time,
                 :compare_price, :phone_required, :delivery_category,
@@ -106,6 +106,7 @@ module ActiveShipping
       self.phone_required = options[:phone_required]
       self.currency = options[:currency]
       self.delivery_range = options[:delivery_range]
+      self.transit_days = options[:transit_days]
       self.shipping_date = options[:shipping_date]
       self.delivery_date = @delivery_range.last
       self.insurance_price = options[:insurance_price]
