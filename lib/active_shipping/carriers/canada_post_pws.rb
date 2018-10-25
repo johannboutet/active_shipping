@@ -284,11 +284,16 @@ module ActiveShipping
         total_price   = price_from_node(node, exclude_tax)
         expected_date = expected_date_from_node(node)
         options = {
-          :service_code   => service_code,
-          :total_price    => total_price,
-          :currency       => 'CAD',
-          :delivery_range => [expected_date, expected_date],
-          :transit_days   => node.at('service-standard/expected-transit-time') ? node.at('service-standard/expected-transit-time').text.to_i : nil
+          service_code: service_code,
+          base_price: Package.cents_from(node.at('price-details/base').text),
+          adjustments: adjustments_from_node(node.at('adjustments')),
+          shipment_options: options_from_node(node.at('price-details/options')),
+          taxes: taxes_from_node(node.at('price-details/taxes')),
+          total_price: total_price,
+          currency: 'CAD',
+          delivery_range: [expected_date, expected_date],
+          transit_days: node.at('service-standard/expected-transit-time') ? node.at('service-standard/expected-transit-time').text.to_i : nil,
+          service_standard: service_standard_from_node(node.at('service-standard'))
         }
         RateEstimate.new(origin, destination, @@name, service_name, options)
       end
@@ -301,6 +306,63 @@ module ActiveShipping
       children = node.at('price-details/taxes').children
       tax_total_cents = children.sum { |node| node.elem? ? Package.cents_from(node.text) : 0 }
       Package.cents_from(price) - tax_total_cents
+    end
+
+    def adjustments_from_node(node)
+      return [] unless node && node.children.count
+
+      node.children.map do |a|
+        res = {
+          code: a.at('adjustment-code').text,
+          name: a.at('adjustment-name').text,
+          cost: Package.cents_from(a.at('adjustment-cost').text)
+        }
+
+        res[:percent] = a.at('qualifier/percent').text.to_d if a.at('qualifier')
+
+        res
+      end
+    end
+
+    def options_from_node(node)
+      return [] unless node && node.children.count
+
+      options = Hash.from_xml(node.to_s)['options']['option']
+      options = [options] unless options.is_a?(Array)
+
+      options.map do |option|
+        {
+          code: option['option_code'],
+          name: option['option_name'],
+          cost: Package.cents_from(option['option_price'])
+        }
+      end
+    end
+
+    def taxes_from_node(node)
+      return [] unless node && node.children.count
+
+      node.children.map do |n|
+        res = {
+          name: n.name.upcase,
+          cost: Package.cents_from(n.text)
+        }
+
+        res[:percent] = n.attribute('percent').text.to_d if res[:cost] > 0
+
+        res
+      end
+    end
+
+    def service_standard_from_node(node)
+      return {} unless node
+
+      standard = Hash.from_xml(node.to_s)['service_standard']
+
+      {
+        morning: standard['am_delivery'] == 'true',
+        guaranteed: standard['guaranteed_delivery'] == 'true'
+      }
     end
 
     # tracking

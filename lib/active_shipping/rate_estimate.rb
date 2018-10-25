@@ -80,13 +80,7 @@ module ActiveShipping
   #   @return [Array<{ group: String, code: String, name: String, description: String, amount: Integer }>]
   #
   class RateEstimate
-    attr_accessor :origin, :destination, :package_rates,
-                :carrier, :service_name, :service_code, :description,
-                :shipping_date, :delivery_date, :delivery_range, :transit_days,
-                :currency, :negotiated_rate, :insurance_price,
-                :estimate_reference, :expires_at, :pickup_time,
-                :compare_price, :phone_required, :delivery_category,
-                :shipment_options, :charge_items, :messages
+    attr_accessor :adjustments, :base_price, :taxes, :origin, :destination, :package_rates, :carrier, :service_name, :service_code, :description, :shipping_date, :delivery_date, :delivery_range, :transit_days, :currency, :negotiated_rate, :insurance_price, :estimate_reference, :expires_at, :pickup_time, :compare_price, :phone_required, :delivery_category, :shipment_options, :charge_items, :messages, :service_standard
 
     def initialize(origin, destination, carrier, service_name, options = {})
       self.origin, self.destination, self.carrier, self.service_name = origin, destination, carrier, service_name
@@ -98,8 +92,11 @@ module ActiveShipping
       if options[:package_rates]
         self.package_rates = options[:package_rates].map { |p| p.update(:rate => Package.cents_from(p[:rate])) }
       else
-        self.package_rates = Array(options[:packages]).map { |p| {:package => p} }
+        self.package_rates = Array(options[:packages]).map { |p| { package: p } }
       end
+      self.base_price = options[:base_price] || 0
+      self.adjustments = options[:adjustments] || []
+      self.taxes = options[:taxes] || []
       self.total_price = options[:total_price]
       self.negotiated_rate = options[:negotiated_rate]
       self.compare_price = options[:compare_price]
@@ -114,6 +111,7 @@ module ActiveShipping
       self.shipment_options = options[:shipment_options] || []
       self.charge_items = options[:charge_items] || []
       self.messages = options[:messages] || []
+      self.service_standard = options[:service_standard] || {}
     end
 
     # The total price of the shipments in cents.
@@ -123,6 +121,7 @@ module ActiveShipping
     rescue NoMethodError
       raise ArgumentError.new("RateEstimate must have a total_price set, or have a full set of valid package rates.")
     end
+
     alias_method :price, :total_price
 
     # Adds a package to this rate estimate
@@ -133,7 +132,7 @@ module ActiveShipping
     def add(package, rate = nil)
       cents = Package.cents_from(rate)
       raise ArgumentError.new("New packages must have valid rate information since this RateEstimate has no total_price set.") if cents.nil? and total_price.nil?
-      @package_rates << {:package => package, :rate => cents}
+      @package_rates << { package: package, rate: cents }
       self
     end
 
