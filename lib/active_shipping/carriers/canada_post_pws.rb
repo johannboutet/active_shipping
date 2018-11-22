@@ -514,8 +514,8 @@ module ActiveShipping
         currency = options[:currency] || "CAD"
         xml.public_send('currency', currency)
         xml.public_send('conversion-from-cad', options[:conversion_from_cad].to_s) if currency != 'CAD' && options[:conversion_from_cad]
-        xml.public_send('reason-for-export', 'SOG') # SOG - Sale of Goods
-        xml.public_send('other-reason', options[:customs_other_reason]) if options[:customs_reason_for_export] && options[:customs_other_reason]
+        xml.public_send('reason-for-export', options[:export_reason] || 'SOG') # SOG - Sale of Goods
+        xml.public_send('other-reason', options[:customs_other_reason]) unless options[:customs_other_reason].blank?
         xml.public_send('additional-customs-info', options[:customs_addition_info]) if options[:customs_addition_info]
         xml.public_send('sku-list') do
           line_items.each do |line_item|
