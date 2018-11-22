@@ -568,6 +568,7 @@ module ActiveShipping
         :receipt_url      => doc.root.at_xpath("links/link[@rel='receipt']")['href'],
       }
       options[:tracking_number] = doc.root.at('tracking-pin').text if doc.root.at('tracking-pin')
+      options[:invoice_url] = doc.root.at_xpath("links/link[@rel='commercialInvoice']")['href'] if doc.root.at_xpath("links/link[@rel='commercialInvoice']")
 
       CPPWSShippingResponse.new(true, "", {}, options)
     end
@@ -926,13 +927,14 @@ module ActiveShipping
 
   class CPPWSShippingResponse < ShippingResponse
     include CPPWSErrorResponse
-    attr_reader :label_url, :details_url, :receipt_url
+    attr_reader :label_url, :details_url, :receipt_url, :invoice_url
     def initialize(success, message, params = {}, options = {})
       handle_error(message, options)
       super
       @label_url      = options[:label_url]
       @details_url    = options[:details_url]
       @receipt_url    = options[:receipt_url]
+      @invoice_url    = options[:invoice_url]
     end
   end
 
