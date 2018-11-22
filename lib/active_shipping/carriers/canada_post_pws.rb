@@ -467,7 +467,7 @@ module ActiveShipping
       xml.public_send('destination') do
         xml.public_send('name', location.name)
         xml.public_send('company', location.company) if location.company.present?
-        xml.public_send('client-voice-number', location.phone)
+        xml.public_send('client-voice-number', location.phone) if location.phone.present?
         xml.public_send('address-details') do
           xml.public_send('address-line-1', location.address1)
           xml.public_send('address-line-2', location.address2_and_3) unless location.address2_and_3.blank?
