@@ -659,7 +659,7 @@ module ActiveShipping
     end
 
     def create_shipment_url(options)
-      raise MissingCustomerNumberError unless customer_number = options[:customer_number]
+      raise MissingCustomerNumberError unless customer_number = @customer_number
       if @platform_id.present?
         endpoint + "rs/#{customer_number}-#{@platform_id}/ncshipment"
       else
@@ -668,7 +668,7 @@ module ActiveShipping
     end
 
     def shipment_url(shipping_id, options = {})
-      raise MissingCustomerNumberError unless customer_number = options[:customer_number]
+      raise MissingCustomerNumberError unless customer_number = @customer_number
       if @platform_id.present?
         endpoint + "rs/#{customer_number}-#{@platform_id}/ncshipment/#{shipping_id}"
       else
@@ -677,7 +677,7 @@ module ActiveShipping
     end
 
     def shipment_receipt_url(shipping_id, options = {})
-      raise MissingCustomerNumberError unless customer_number = options[:customer_number]
+      raise MissingCustomerNumberError unless customer_number = @customer_number
       if @platform_id.present?
         endpoint + "rs/#{customer_number}-#{@platform_id}/ncshipment/#{shipping_id}/receipt"
       else
