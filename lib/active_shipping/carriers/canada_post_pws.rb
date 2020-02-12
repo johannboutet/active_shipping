@@ -32,9 +32,9 @@ module ActiveShipping
 
     ENDPOINT = "https://soa-gw.canadapost.ca/"    # production
 
-    SHIPMENT_MIMETYPE = "application/vnd.cpc.ncshipment+xml"
-    RATE_MIMETYPE = "application/vnd.cpc.ship.rate+xml"
-    TRACK_MIMETYPE = "application/vnd.cpc.track+xml"
+    SHIPMENT_MIMETYPE = "application/vnd.cpc.ncshipment-v4+xml"
+    RATE_MIMETYPE = "application/vnd.cpc.ship.rate-v4+xml"
+    TRACK_MIMETYPE = "application/vnd.cpc.track-v2+xml"
     REGISTER_MIMETYPE = "application/vnd.cpc.registration+xml"
 
     LANGUAGE = {
@@ -258,7 +258,7 @@ module ActiveShipping
       line_items = Array(line_items)
 
       builder = Nokogiri::XML::Builder.new do |xml|
-        xml.public_send('mailing-scenario', :xmlns => "http://www.canadapost.ca/ws/ship/rate") do
+        xml.public_send('mailing-scenario', :xmlns => "http://www.canadapost.ca/ws/ship/rate-v4") do
           customer_number_node(xml, options)
           contract_id_node(xml, options)
           quote_type_node(xml, options)
@@ -423,7 +423,7 @@ module ActiveShipping
     #
     def build_shipment_request(origin, destination, package, line_items = [], options = {})
       builder = Nokogiri::XML::Builder.new do |xml|
-        xml.public_send('non-contract-shipment', :xmlns => "http://www.canadapost.ca/ws/ncshipment") do
+        xml.public_send('non-contract-shipment', :xmlns => "http://www.canadapost.ca/ws/ncshipment-v4") do
           xml.public_send('delivery-spec') do
             shipment_service_code_node(xml, options)
             shipment_sender_node(xml, origin, options)
